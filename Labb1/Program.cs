@@ -8,21 +8,20 @@ namespace Labb1
     {
         static void Main(string[] args)
         {
-            RunProgram();
-
-            Console.ReadKey();
+            string input = args[0];
+            RunProgram(input);
         }
         //Method used to find secret numbers in an input
-        static long[] FindSecretNumbers(string input)
+        static string[] FindSecretNumbers(string input)
         {
-            List<long> secretNumbers = new List<long>();
+            List<string> secretNumbersList = new List<string>();
             
             for (int i = 0; i < input.Length; i++)
             {
                 char startChar = input[i];
                 int startNumber;
                 bool startCharIsNumber = int.TryParse(startChar.ToString(), out startNumber);
-                Console.WriteLine("i = " + i);
+                //Console.WriteLine("new i iteration = " + i);
                 if (!startCharIsNumber)
                 {
                     continue;
@@ -45,81 +44,97 @@ namespace Labb1
                     {
                         int secretNumberLength = j - i + 1;
                         string secretString = input.Substring(i, secretNumberLength);
-                        secretNumbers.Add(long.Parse(secretString));
+                        secretNumbersList.Add(secretString);
                         Console.WriteLine("i = " + i);
                         Console.WriteLine("j = " + j);
                         Console.WriteLine("Starnumber = " + startNumber);
                         Console.WriteLine("currentchar = " + currentChar);
                         Console.WriteLine("currentnumber = " + currentNumber);
+                        Console.WriteLine("Creates secretword = " + secretString);
                         break;
                     }
                 }
             }
-            foreach(long secretnumber in secretNumbers)
+            foreach (string secretnumber in secretNumbersList)
             {
                 Console.WriteLine(secretnumber);
             }
-            return secretNumbers.ToArray();
+            return secretNumbersList.ToArray();
         }
         //Method to calculate the sum of all secret numbers.
-        static long CalculateSecretNumbers(long[] secretNumbers)
+        static long CalculateSecretNumbers(string[] secretNumbers)
         {
-            long sum = secretNumbers.Sum();
+            long[] secretNumbersAsLong = new long[secretNumbers.Length];
+            for(int i = 0; i < secretNumbers.Length; i++)
+            {
+                secretNumbersAsLong[i] = long.Parse(secretNumbers[i]);
+            }
+            long sum = secretNumbersAsLong.Sum();
             return sum;
         }
         // Method to print the whole input but with the secretnumbers in a different color.
-        static void PrintSecretNumbers(string input, long[] secretNumbers)
+        static void PrintSecretNumbers(string input, string[] secretNumbers,long total)
         {
-            string[] secretNumbersAsString = new string[secretNumbers.Length];
-
-            for(int i = 0; i < secretNumbers.Length; i++)
+            if(input == null)
             {
-                secretNumbersAsString[i] = secretNumbers[i].ToString();
+                Console.WriteLine("input is null");
+                return;
             }
-
-            foreach (string secretNumber in secretNumbersAsString)
+            if(secretNumbers.Length == 0)
             {
-                int currentPosition = 0;
+                Console.WriteLine(input);
+                Console.WriteLine($"No secret numbers.Therefor no sum.");
+            }
+            Console.WriteLine();
+            Console.WriteLine($"INPUT : {input}\n");
+            
 
-                while (currentPosition < input.Length)
+            string beforeSecretNumber;
+            int currentPosition = 0;
+            
+
+            foreach (string secretNumber in secretNumbers)
+            {
+                string leftOfInput = input.Substring(currentPosition);
+                //Console.WriteLine("currentpos : " + currentPosition + " secretnum : " + secretNumber + " leftofinpput : " + leftOfInput);
+
+                while (!leftOfInput.StartsWith(secretNumber))
                 {
-                    bool foundSecretNumber = false;
-                        
-                    if (currentPosition + secretNumber.Length <= input.Length && input.Substring(currentPosition).StartsWith(secretNumber))
-                    {
-                        Console.ForegroundColor = ConsoleColor.Cyan;
-                        Console.Write(secretNumber);
-                        currentPosition += secretNumber.Length;
-                        foundSecretNumber = true;
-                    }
-                        
-                    if (!foundSecretNumber)
-                    {
-                        Console.ForegroundColor = ConsoleColor.Gray;
-                        Console.Write(input[currentPosition]);
-                        currentPosition++;
-                    }
-                    
+                    currentPosition++;
+                    leftOfInput = input.Substring(currentPosition);
                 }
+
+                beforeSecretNumber = input.Substring(0, currentPosition);
+                //Console.WriteLine("beforesecretnumber " + beforeSecretNumber);
                 Console.ForegroundColor = ConsoleColor.Gray;
+                Console.Write(beforeSecretNumber);
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.Write(secretNumber);
+                leftOfInput = input.Substring(currentPosition + secretNumber.Length);
+                //Console.WriteLine("leftofinpput 2 " + leftOfInput); 
+                Console.ForegroundColor = ConsoleColor.Gray;
+                Console.Write(leftOfInput);
                 Console.WriteLine();
+                currentPosition++;
+
             }
+            Console.WriteLine($"\nThe sum of all Secret numbers is: {total}");
+
         }
         //Method to run the application
-        static void RunProgram()
+        static void RunProgram(string input)
         {
-            string input = "4335435023047";//"29535123p48723487597645723645";
-            long[] secretNumbers = FindSecretNumbers(input);
+            Console.WriteLine("Welcome to the Secret number finder! Input whatever you like and I will try to find 'Secret Numbers' \n" +
+                "A secret number is a number that starts with a digit and ends with the same digit, and has no characters inbetween.\nEx '3403'\n" +
+                "All secret numbers found, will be highlighted in cyan.\n" +
+                "I will also print the sum of all Secret numbers.\n" +
+                "Please enter your input here:");
+            //"4335435gh023047";//"29535123p48723487597645723645";
+
+            string[] secretNumbers = FindSecretNumbers(input);
             long sum = CalculateSecretNumbers(secretNumbers);
-            PrintSecretNumbers(input, secretNumbers);
-            Console.WriteLine();
-            if(sum > 0)
-            {
-                Console.WriteLine("The sum of all Secretnumbers are: " + sum);
-            }else
-            {
-                Console.WriteLine("We couldn't find any secret number :(");
-            }
+            PrintSecretNumbers(input, secretNumbers, sum);
+            
             
         }
     }
